@@ -16,6 +16,7 @@ import (
 	"github.com/pingcap/ng_monitoring/service"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/procutil"
+	"github.com/google/gops/agent"
 	"github.com/pingcap/log"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
@@ -43,6 +44,10 @@ func main() {
 	// There are dependencies that use `flag`.
 	// For isolation and avoiding conflict, we use another command line parser package `pflag`.
 	pflag.Parse()
+
+	if err := agent.Listen(agent.Options{}); err != nil {
+		stdlog.Fatalf("agent.Listen err: %v", err)
+	}
 
 	cfg, err := config.InitConfig(*configPath, overrideConfig)
 	if err != nil {
