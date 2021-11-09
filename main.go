@@ -8,11 +8,9 @@ import (
 
 	"github.com/pingcap/ng_monitoring/component/conprof"
 	"github.com/pingcap/ng_monitoring/component/topology"
-	"github.com/pingcap/ng_monitoring/component/topsql"
 	"github.com/pingcap/ng_monitoring/config"
 	"github.com/pingcap/ng_monitoring/database"
 	"github.com/pingcap/ng_monitoring/database/document"
-	"github.com/pingcap/ng_monitoring/database/timeseries"
 	"github.com/pingcap/ng_monitoring/service"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/procutil"
@@ -71,8 +69,8 @@ func main() {
 	pdvariable.Init(topology.GetEtcdClient)
 	defer pdvariable.Stop()
 
-	topsql.Init(document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
-	defer topsql.Stop()
+	//topsql.Init(document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
+	//defer topsql.Stop()
 
 	err = conprof.Init(document.Get(), topology.Subscribe())
 	if err != nil {
