@@ -25,6 +25,10 @@ type logger struct {
 	level loggingLevel
 }
 
+func SimpleLogger(l *config.Log) (*logger, error) {
+	return simpleLogger(l)
+}
+
 func simpleLogger(l *config.Log) (*logger, error) {
 	logFileName := path.Join(l.Path, "docdb.log")
 	file, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
