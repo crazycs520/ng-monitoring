@@ -1,0 +1,42 @@
+badger 2021/11/09 16:20:41 INFO: All 11 tables opened in 1ms
+badger 2021/11/09 16:20:41 INFO: Discard stats nextEmptySlot: 0
+badger 2021/11/09 16:20:41 INFO: Set nextTxnTs to 2659
+badger 2021/11/09 16:20:41 INFO: Deleting empty file: /Users/cs/code/ng-monitoring/data/docdb/000013.vlog
+badger 2021/11/09 16:20:42 INFO: Lifetime L0 stalled for: 0s
+badger 2021/11/09 16:20:42 INFO: 
+Level 0 [ ]: NumTables: 02. Size: 570 B of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 6 [ ]: NumTables: 09. Size: 17 MiB of 17 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 4.0 MiB
+Level Done
+badger 2021/11/09 16:21:35 INFO: All 11 tables opened in 1ms
+badger 2021/11/09 16:21:35 INFO: Discard stats nextEmptySlot: 0
+badger 2021/11/09 16:21:35 INFO: Set nextTxnTs to 2659
+badger 2021/11/09 16:21:35 INFO: Deleting empty file: /Users/cs/code/ng-monitoring/data/docdb/000014.vlog
+badger 2021/11/09 16:21:35 INFO: Lifetime L0 stalled for: 0s
+badger 2021/11/09 16:21:35 INFO: 
+Level 0 [ ]: NumTables: 02. Size: 570 B of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 6 [ ]: NumTables: 09. Size: 17 MiB of 17 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 4.0 MiB
+Level Done
+badger 2021/11/09 16:21:55 INFO: All 11 tables opened in 1ms
+badger 2021/11/09 16:21:55 INFO: Discard stats nextEmptySlot: 0
+badger 2021/11/09 16:21:55 INFO: Set nextTxnTs to 2659
+badger 2021/11/09 16:21:55 INFO: Deleting empty file: /Users/cs/code/ng-monitoring/data/docdb/000015.vlog
+badger 2021/11/09 16:21:55 INFO: Lifetime L0 stalled for: 0s
+badger 2021/11/09 16:21:55 INFO: 
+Level 0 [ ]: NumTables: 02. Size: 570 B of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 6 [ ]: NumTables: 09. Size: 17 MiB of 17 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 4.0 MiB
+Level Done
