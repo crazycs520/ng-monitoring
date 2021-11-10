@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/google/gops/agent"
@@ -18,12 +19,16 @@ func main() {
 	cnt := 0
 	for {
 		cnt++
-		m := make([]byte, single)
+		size := rand.Intn(single * 2)
+		m := make([]byte, single+size)
 		for i := range m {
 			m[i] = byte(i % 255)
 		}
 		idx := cnt % num
 		cache[idx] = m
-		time.Sleep(time.Millisecond * 50)
+
+		for i := range m {
+			m[i] = byte(i % 255)
+		}
 	}
 }
