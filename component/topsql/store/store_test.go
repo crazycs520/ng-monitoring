@@ -2,7 +2,6 @@ package store
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"github.com/pingcap/log"
 	"github.com/pingcap/ng_monitoring/config"
@@ -16,16 +15,9 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
-	"time"
 )
 
 func TestStoreBasic(t *testing.T) {
-	now := time.Now()
-	ctx, cancel := context.WithDeadline(context.Background(), now.Add(time.Second))
-	cancel()
-	<-ctx.Done()
-	require.Equal(t, time.Now().String(), now.String())
-
 	defCfg := config.GetDefaultConfig()
 	config.StoreGlobalConfig(&defCfg)
 	cfg := config.GetGlobalConfig()
