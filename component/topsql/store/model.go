@@ -7,9 +7,9 @@ type Metric struct {
 }
 
 type topSQLTags struct {
+	SQLDigest    string `json:"sql_digest"`
 	Name         string `json:"__name__"`
+	PlanDigest   string `json:"plan_digest,omitempty"`
 	Instance     string `json:"instance"`
 	InstanceType string `json:"instance_type"`
-	SQLDigest    string `json:"sql_digest"`
-	PlanDigest   string `json:"plan_digest,omitempty"`
 }
