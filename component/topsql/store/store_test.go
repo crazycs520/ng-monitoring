@@ -19,6 +19,7 @@ import (
 
 func TestStoreBasic(t *testing.T) {
 	defCfg := config.GetDefaultConfig()
+	defCfg.Storage.Path = "/tmp/data"
 	config.StoreGlobalConfig(&defCfg)
 	cfg := config.GetGlobalConfig()
 	defer func() {
@@ -41,20 +42,39 @@ func TestStoreBasic(t *testing.T) {
 			SQLDigest:    "abcdefghijk",
 			PlanDigest:   "12345678901",
 		},
-		Timestamps: []uint64{ts},
-		Values:     []uint32{120},
 	}
+	insertFn := func(metric Metric) {
+		buf := bytes.NewBuffer(nil)
+		err := encodeMetric(buf, metric)
+		require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	err := encodeMetric(buf, metric)
-	require.NoError(t, err)
-
-	header := http.Header{}
-	respR := utils.NewRespWriter(buf, header)
-	log.Info("------", zap.String("body", buf.String()))
-	req, err := http.NewRequest("POST", "/api/v1/import", buf)
-	require.NoError(t, err)
-	timeseries.InsertHandler(&respR, req)
+		header := http.Header{}
+		respR := utils.NewRespWriter(buf, header)
+		//log.Info("------", zap.String("body", buf.String()))
+		req, err := http.NewRequest("POST", "/api/v1/import", buf)
+		require.NoError(t, err)
+		timeseries.InsertHandler(&respR, req)
+		require.True(t, respR.Code == 200 || respR.Code == 204)
+	}
+	batchCnt := 10240
+	batch := 512
+	for i := 0; i < batchCnt; i++ {
+		metric := Metric{
+			Metric: topSQLTags{
+				Name:         "cpu_time",
+				Instance:     "10.0.1.8",
+				InstanceType: "tidb",
+				SQLDigest:    "abcdefghijk",
+				PlanDigest:   "12345678901",
+			},
+		}
+		for j := 0; j < batch; j++ {
+			metric.Timestamps = append(metric.Timestamps, ts+uint64(i*batchCnt+j))
+			metric.Values = append(metric.Values, uint32(100+j))
+		}
+		//insertFn(metric)
+		_ = insertFn
+	}
 
 	// test for query
 	//query := fmt.Sprintf("sum_over_time(cpu_time{instance=\"%s\"}[%d])", metric.Metric.Instance, 1)
@@ -64,7 +84,7 @@ func TestStoreBasic(t *testing.T) {
 	start := strconv.Itoa(int(ts / 1000))
 	end := strconv.Itoa(int(ts/1000 + 1))
 
-	req, err = http.NewRequest("GET", "/api/v1/query_range", nil)
+	req, err := http.NewRequest("GET", "/api/v1/query_range", nil)
 	require.NoError(t, err)
 	reqQuery := req.URL.Query()
 	reqQuery.Set("query", query)
@@ -74,8 +94,9 @@ func TestStoreBasic(t *testing.T) {
 	req.URL.RawQuery = reqQuery.Encode()
 	req.Header.Set("Accept", "application/json")
 
-	buf = bytes.NewBuffer(nil)
-	respR = utils.NewRespWriter(buf, header)
+	buf := bytes.NewBuffer(nil)
+	header := http.Header{}
+	respR := utils.NewRespWriter(buf, header)
 	timeseries.SelectHandler(&respR, req)
 	data, err := ioutil.ReadAll(respR.Body)
 	require.NoError(t, err)
