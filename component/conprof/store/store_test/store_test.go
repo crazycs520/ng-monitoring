@@ -20,7 +20,6 @@ func TestProfileStorage(t *testing.T) {
 	require.NoError(t, err)
 	defer func() {
 		size, err := DirSize(tmpDir)
-		require.NoError(t, err)
 		fmt.Printf("after close, db path size: %v MB\n", size/1024/1024)
 		err = os.RemoveAll(tmpDir)
 		require.NoError(t, err)
@@ -44,7 +43,7 @@ func testProfileStorage(t *testing.T, storage *store.ProfileStorage, baseTs int6
 	require.NoError(t, err)
 
 	concurrency := 40
-	batchSize := 100
+	batchSize := 1000
 
 	lastPrint := time.Now()
 	min := time.Hour
