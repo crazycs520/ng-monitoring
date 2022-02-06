@@ -21,16 +21,16 @@ import (
 )
 
 var (
-	retentionPeriod = pflag.String("retention-period", "1", "Data with timestamps outside the retentionPeriod is automatically deleted\nThe following optional suffixes are supported: h (hour), d (day), w (week), y (year). If suffix isn't set, then the duration is counted in months")
+	retentionPeriod = pflag.String("retention-period", "10", "Data with timestamps outside the retentionPeriod is automatically deleted\nThe following optional suffixes are supported: h (hour), d (day), w (week), y (year). If suffix isn't set, then the duration is counted in months")
 )
 
 func Init(cfg *config.Config) {
+	_ = flag.Set("retentionPeriod", *retentionPeriod)
+
 	if err := initLogger(cfg); err != nil {
 		log.Fatal("Failed to open log file", zap.Error(err))
 	}
 	initDataDir(path.Join(cfg.Storage.Path, "tsdb"))
-
-	_ = flag.Set("retentionPeriod", *retentionPeriod)
 
 	// Some components in VictoriaMetrics want parsed arguments, i.e. assert `flag.Parsed()`. Make them happy.
 	_ = flag.CommandLine.Parse(nil)

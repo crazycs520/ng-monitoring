@@ -32,8 +32,7 @@ func TestStoreBasic(t *testing.T) {
 	db := document.Get()
 	Init(timeseries.InsertHandler, db)
 
-	//ts := uint64(time.Now().UnixNano() / int64(time.Millisecond))
-	ts := uint64(1642672260000)
+	ts := uint64(1633435143)
 	insertFn := func(metric Metric) {
 		buf := bytes.NewBuffer(nil)
 		err := encodeMetric(buf, metric)
@@ -47,17 +46,17 @@ func TestStoreBasic(t *testing.T) {
 		timeseries.InsertHandler(&respR, req)
 		require.True(t, respR.Code == 200 || respR.Code == 204)
 	}
-	batchCnt := 2
-	batch := 10
+	batchCnt := 1024
+	batch := 2048
 	for i := 0; i < batchCnt; i++ {
 		metric := Metric{
 			Metric: topSQLTags{
-				Name:     "cpu_time",
-				Instance: "10.0.1.8",
+				Name:     "cpu",
+				Instance: "tidb-0",
 			},
 		}
 		for j := 0; j < batch; j++ {
-			metric.Timestamps = append(metric.Timestamps, ts+uint64(i*batchCnt+j))
+			metric.Timestamps = append(metric.Timestamps, (ts+uint64(i*batchCnt+j)*10)*1000)
 			metric.Values = append(metric.Values, uint32(100+j))
 		}
 		insertFn(metric)
@@ -65,12 +64,9 @@ func TestStoreBasic(t *testing.T) {
 	}
 
 	// test for query
-	query := fmt.Sprintf("cpu_time")
-	//query := fmt.Sprintf("cpu_time{instance=\"%s\"}", metric.Metric.Instance)
-	//start := strconv.Itoa(int(time.Now().Unix() - 60*60*5))
-	//end := strconv.Itoa(int(time.Now().Unix() + 60))
-	start := strconv.Itoa(int(ts / 1000))
-	end := strconv.Itoa(int(ts/1000 + 100))
+	query := fmt.Sprintf("cpu")
+	start := strconv.Itoa(int(ts))
+	end := strconv.Itoa(int(ts + 10))
 
 	req, err := http.NewRequest("GET", "/api/v1/query_range", nil)
 	require.NoError(t, err)
