@@ -14,7 +14,6 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmstorage"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/fs"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/logger"
-	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 	"github.com/pingcap/log"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
@@ -36,7 +35,7 @@ func Init(cfg *config.Config) {
 	_ = flag.CommandLine.Parse(nil)
 
 	startTime := time.Now()
-	storage.SetMinScrapeIntervalForDeduplication(0)
+	//storage.SetMinScrapeIntervalForDeduplication(0)
 	vmstorage.Init(promql.ResetRollupResultCacheIfNeeded)
 	vmselect.Init()
 	vminsert.Init()
