@@ -2,6 +2,7 @@ package debug
 
 import (
 	"fmt"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ func ListBadgerDB(db *badger.DB) error {
 	keyCount := 0
 	err := db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
+		opts.AllVersions = true
 		it := txn.NewIterator(opts)
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
@@ -57,7 +59,11 @@ func ListBadgerDB(db *badger.DB) error {
 		zap.Float64("key-size(MB)", float64(keySize)/MB),
 		zap.Float64("value-size(GB)", float64(valueSize)/GB),
 	)
-	return nil
+	start := time.Now()
+	cpuNum := runtime.NumCPU()
+	err = db.Flatten(cpuNum)
+	log.Info("badger finish flatten", zap.Duration("cost", time.Since(start)), zap.Int("cpu-num", cpuNum))
+	return err
 }
 
 func ListDocDBData(db *genji.DB) error {
