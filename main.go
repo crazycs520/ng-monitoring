@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/pingcap/ng-monitoring/component/conprof"
+	"github.com/pingcap/ng-monitoring/component/debug"
 	"github.com/pingcap/ng-monitoring/component/domain"
 	"github.com/pingcap/ng-monitoring/component/topology"
 	"github.com/pingcap/ng-monitoring/component/topsql"
@@ -42,6 +43,7 @@ var (
 	storagePath      = pflag.String(nmStoragePath, "", "Storage path of ng monitoring server")
 	configPath       = pflag.String(nmConfig, "", "config file path")
 	advertiseAddress = pflag.String(nmAdvertiseAddress, "", "ngm server advertise IP:PORT")
+	listDB           = pflag.Bool("list-db", false, "list docdb data")
 )
 
 func main() {
@@ -67,6 +69,14 @@ func main() {
 
 	database.Init(cfg)
 	defer database.Stop()
+
+	if *listDB {
+		err := debug.ListDocDBData(document.Get())
+		if err != nil {
+			stdlog.Fatalf("err: %v", err)
+		}
+		return
+	}
 
 	err = config.LoadConfigFromStorage(document.Get)
 	if err != nil {
