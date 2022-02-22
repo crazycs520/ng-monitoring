@@ -2,10 +2,16 @@ package debug
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
 	"github.com/genjidb/genji/types"
 	"github.com/pingcap/log"
+	"github.com/pingcap/ng-monitoring/component/conprof/store"
 	"go.uber.org/zap"
 )
 
@@ -14,11 +20,28 @@ func ListDocDBData(db *genji.DB) error {
 	if err != nil {
 		return err
 	}
+	sort.Strings(tables)
+	tm, err := loadAllTargetsFromTable(db)
+	if err != nil {
+		return err
+	}
 	totalSize := 0
 	for _, table := range tables {
-		size, err := getTableDataSize(db, table)
+		size, count, err := getTableDataSize(db, table)
 		if err != nil {
 			return err
+		}
+		pt := getProfileTarget(tm, table)
+		if pt == nil {
+			log.Info("finish get table size", zap.String("table", table), zap.Int("rows", count), zap.Float64("size(GB)", float64(size)/GB))
+		} else {
+			t := time.Unix(pt.LastScrapeTs, 0)
+			log.Info("finish get table size", zap.String("table", table), zap.Int("rows", count), zap.Float64("size(GB)", float64(size)/GB),
+				zap.String("component", pt.Component),
+				zap.String("kind", pt.Kind),
+				zap.String("addr", pt.Address),
+				zap.String("last_scrape", t.String()),
+			)
 		}
 		totalSize += size
 	}
@@ -28,24 +51,25 @@ func ListDocDBData(db *genji.DB) error {
 
 const GB = 1024 * 1024 * 1024
 
-func getTableDataSize(db *genji.DB, table string) (int, error) {
+func getTableDataSize(db *genji.DB, table string) (int, int, error) {
 	query := fmt.Sprintf("SELECT * from %v", table)
 	res, err := db.Query(query)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	defer res.Close()
 
 	totalSize := 0
+	count := 0
 	err = res.Iterate(func(d types.Document) error {
+		count++
 		return d.Iterate(func(_ string, value types.Value) error {
 			size := getValueSize(value)
 			totalSize += size
 			return nil
 		})
 	})
-	log.Info("finish get table size", zap.String("table", table), zap.Float64("size(GB)", float64(totalSize)/GB))
-	return totalSize, nil
+	return totalSize, count, nil
 }
 
 func getValueSize(value types.Value) int {
@@ -89,4 +113,53 @@ func ListDocDBTables(db *genji.DB) ([]string, error) {
 		return nil
 	})
 	return tables, nil
+}
+
+func getProfileTarget(tm map[int64]*ProfileTarget, table string) *ProfileTarget {
+	fields := strings.Split(table, "_")
+	if len(fields) != 3 || fields[0] != "conprof" || fields[2] != "data" {
+		return nil
+	}
+	id, err := strconv.ParseInt(fields[1], 10, 64)
+	if err != nil {
+		return nil
+	}
+	return tm[id]
+}
+
+type ProfileTarget struct {
+	ID           int64
+	LastScrapeTs int64
+
+	Kind      string `json:"kind"`
+	Component string `json:"component"`
+	Address   string `json:"address"`
+}
+
+func loadAllTargetsFromTable(db *genji.DB) (map[int64]*ProfileTarget, error) {
+	query := fmt.Sprintf("SELECT id, kind, component, address, last_scrape_ts FROM %v", store.MetaTableName)
+	res, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	tm := make(map[int64]*ProfileTarget)
+	err = res.Iterate(func(d types.Document) error {
+		var id, ts int64
+		var kind, component, address string
+		err = document.Scan(d, &id, &kind, &component, &address, &ts)
+		if err != nil {
+			return err
+		}
+		tm[id] = &ProfileTarget{
+			ID:           id,
+			LastScrapeTs: ts,
+			Kind:         kind,
+			Component:    component,
+			Address:      address,
+		}
+		return nil
+	})
+	return tm, nil
 }

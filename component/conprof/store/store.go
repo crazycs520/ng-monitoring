@@ -24,6 +24,7 @@ const (
 	metaTableSuffix = "meta"
 	dataTableSuffix = "data"
 	metaTableName   = tableNamePrefix + "_targets_meta"
+	MetaTableName   = metaTableName
 )
 
 var ErrStoreIsClosed = errors.New("storage is closed")
