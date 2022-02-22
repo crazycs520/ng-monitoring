@@ -15,6 +15,7 @@ import (
 )
 
 var documentDB *genji.DB
+var badgerDB *badger.DB
 var closeCh chan struct{}
 
 func Init(cfg *config.Config) {
@@ -41,6 +42,7 @@ func Init(cfg *config.Config) {
 		log.Fatal("failed to open a document database", zap.String("path", dataPath), zap.Error(err))
 	}
 	documentDB = db
+	badgerDB = engine.DB
 }
 
 func doGCLoop(db *badger.DB, closed chan struct{}) {
@@ -90,6 +92,10 @@ func runValueLogGC(db *badger.DB) {
 
 func Get() *genji.DB {
 	return documentDB
+}
+
+func GetBadgerDB() *badger.DB {
+	return badgerDB
 }
 
 func Stop() {

@@ -71,7 +71,7 @@ func main() {
 	defer database.Stop()
 
 	if *listDB {
-		err := debug.ListDocDBData(document.Get())
+		err := debug.ListDBData(document.Get(), document.GetBadgerDB())
 		if err != nil {
 			stdlog.Fatalf("err: %v", err)
 		}
