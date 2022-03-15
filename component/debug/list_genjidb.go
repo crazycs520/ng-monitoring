@@ -22,16 +22,28 @@ func ListDBData(genji *genji.DB, badger *badger.DB) error {
 	if err != nil {
 		return nil
 	}
-	return ListBadgerDB(badger)
+	err = ListBadgerDB(badger, false)
+	if err != nil {
+		return nil
+	}
+	err = ListBadgerDB(badger, true)
+	if err != nil {
+		return nil
+	}
+	start := time.Now()
+	cpuNum := runtime.NumCPU()
+	err = badger.Flatten(cpuNum)
+	log.Info("badger finish flatten", zap.Duration("cost", time.Since(start)), zap.Int("cpu-num", cpuNum))
+	return err
 }
 
-func ListBadgerDB(db *badger.DB) error {
+func ListBadgerDB(db *badger.DB, allVersion bool) error {
 	keySize := 0
 	valueSize := 0
 	keyCount := 0
 	err := db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
-		opts.AllVersions = true
+		opts.AllVersions = allVersion
 		it := txn.NewIterator(opts)
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
@@ -55,15 +67,12 @@ func ListBadgerDB(db *badger.DB) error {
 
 	log.Info("finish get total badger db size",
 		zap.Float64("size(GB)", float64(keySize+valueSize)/GB),
+		zap.Bool("all-version", allVersion),
 		zap.Int("count", keyCount),
 		zap.Float64("key-size(MB)", float64(keySize)/MB),
 		zap.Float64("value-size(GB)", float64(valueSize)/GB),
 	)
-	start := time.Now()
-	cpuNum := runtime.NumCPU()
-	err = db.Flatten(cpuNum)
-	log.Info("badger finish flatten", zap.Duration("cost", time.Since(start)), zap.Int("cpu-num", cpuNum))
-	return err
+	return nil
 }
 
 func ListDocDBData(db *genji.DB) error {
