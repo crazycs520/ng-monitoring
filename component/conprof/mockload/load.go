@@ -31,7 +31,7 @@ func init() {
 	}
 }
 
-func StartLoadData(db *store.ProfileStorage) {
+func StartLoadData(db *store.ProfileStorage, mockLoad bool) {
 	cfg := config.GetGlobalConfig()
 	cfg.ContinueProfiling.DataRetentionSeconds = 60 * 1
 	config.StoreGlobalConfig(cfg)
@@ -41,7 +41,9 @@ func StartLoadData(db *store.ProfileStorage) {
 		total += len(data)
 	}
 	log.Info("init finish", zap.Int("total_data_list_size(MB)", total/1024/1024), zap.Int("total_per_minute", total*len(profileTargets)*60/1024/1024))
-	go startLoadData(db)
+	if mockLoad {
+		go startLoadData(db)
+	}
 	go func() {
 		for {
 			time.Sleep(time.Minute)

@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/VictoriaMetrics/VictoriaMetrics v1.65.0
-	github.com/dgraph-io/badger/v3 v3.2103.1
+	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/genjidb/genji v0.13.0
 	github.com/genjidb/genji/engine/badgerengine v0.13.0
 	github.com/gin-contrib/pprof v1.3.0

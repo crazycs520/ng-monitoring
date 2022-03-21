@@ -43,6 +43,7 @@ var (
 	storagePath      = pflag.String(nmStoragePath, "", "Storage path of ng monitoring server")
 	configPath       = pflag.String(nmConfig, "", "config file path")
 	advertiseAddress = pflag.String(nmAdvertiseAddress, "", "ngm server advertise IP:PORT")
+	mockLoad         = pflag.BoolP("mock-load", "", true, "mock load")
 )
 
 func main() {
@@ -98,7 +99,7 @@ func main() {
 	}
 	defer conprof.Stop()
 
-	mockload.StartLoadData(conprof.GetStorage())
+	mockload.StartLoadData(conprof.GetStorage(), *mockLoad)
 
 	service.Init(cfg)
 	defer service.Stop()
