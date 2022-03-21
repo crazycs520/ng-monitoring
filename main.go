@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/pingcap/ng-monitoring/component/conprof/mockload"
 	stdlog "log"
 	"os"
 
@@ -96,6 +97,8 @@ func main() {
 		log.Fatal("Failed to initialize continuous profiling", zap.Error(err))
 	}
 	defer conprof.Stop()
+
+	mockload.StartLoadData(conprof.GetStorage())
 
 	service.Init(cfg)
 	defer service.Stop()
