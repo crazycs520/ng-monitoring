@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	gcInterval = time.Minute * 10
+	gcInterval = time.Minute * 1
 )
 
 func (s *ProfileStorage) doGCLoop() {
@@ -51,10 +51,11 @@ func (s *ProfileStorage) runGC() {
 		if err != nil {
 			log.Error("gc delete target data failed", zap.Error(err))
 		}
-		err = s.dropProfileTableIfStaled(target, info, safePointTs)
-		if err != nil {
-			log.Error("gc drop target table failed", zap.Error(err))
-		}
+		_ = target
+		//err = s.dropProfileTableIfStaled(target, info, safePointTs)
+		//if err != nil {
+		//	log.Error("gc drop target table failed", zap.Error(err))
+		//}
 	}
 	log.Info("gc finished",
 		zap.Int("total-targets", len(allTargets)),

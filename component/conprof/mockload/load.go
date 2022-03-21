@@ -2,6 +2,7 @@ package mockload
 
 import (
 	"github.com/pingcap/log"
+	"github.com/pingcap/ng-monitoring/database/document"
 	"go.uber.org/zap"
 	"math/rand"
 	"os"
@@ -32,7 +33,7 @@ func init() {
 
 func StartLoadData(db *store.ProfileStorage) {
 	cfg := config.GetGlobalConfig()
-	cfg.ContinueProfiling.DataRetentionSeconds = 60 * 5
+	cfg.ContinueProfiling.DataRetentionSeconds = 60 * 1
 	config.StoreGlobalConfig(cfg)
 
 	total := 0
@@ -41,12 +42,21 @@ func StartLoadData(db *store.ProfileStorage) {
 	}
 	log.Info("init finish", zap.Int("total_data_list_size(MB)", total/1024/1024), zap.Int("total_per_minute", total*len(profileTargets)*60/1024/1024))
 	go startLoadData(db)
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+			badgerDB := document.GetBadger()
+			ListBadgerDB(badgerDB, false)
+			ListBadgerDB(badgerDB, true)
+		}
+	}()
 }
 
 func startLoadData(db *store.ProfileStorage) {
 	totalWritedSize := 0
 	lastTime := time.Time{}
 	lastLogTime := time.Now()
+	ticker := time.NewTicker(time.Minute)
 	for {
 		start := time.Now()
 		ts := start
@@ -74,7 +84,24 @@ func startLoadData(db *store.ProfileStorage) {
 			time.Sleep(sleep)
 		}
 
-		if time.Since(lastLogTime) > time.Second*5 {
+		select {
+		case <-ticker.C:
+			for _, pt := range profileTargets {
+				for i, _ := range datas {
+					_, err := db.UpdateProfileTargetInfo(meta.ProfileTarget{
+						Kind:      "heap" + strconv.Itoa(i),
+						Component: pt,
+						Address:   "0.0.0.0:4000",
+					}, ts.Unix())
+					if err != nil {
+						log.Warn("write data error", zap.Error(err))
+					}
+				}
+			}
+		default:
+		}
+
+		if time.Since(lastLogTime) > time.Second*10 {
 			lastLogTime = time.Now()
 			dirSize, _ := DirSize(config.GetGlobalConfig().Storage.Path)
 			log.Info("report load data", zap.Int("writed_data(MB)", totalWritedSize/1024/1024), zap.Int64("dir_size(MB)", dirSize/1024/1024))

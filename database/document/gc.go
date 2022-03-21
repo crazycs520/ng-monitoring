@@ -12,12 +12,12 @@ import (
 
 var (
 	lastFlattenTsKey = []byte("last_flatten_ts")
-	flattenInterval  = time.Hour * 24
+	flattenInterval  = time.Minute * 3
 )
 
 func doGCLoop(db *badger.DB, closed chan struct{}) {
 	log.Info("badger start to run value log gc loop")
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer func() {
 		ticker.Stop()
 		log.Info("badger stop running value log gc loop")
