@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pingcap/ng-monitoring/component/conprof/meta"
@@ -16,8 +17,8 @@ import (
 )
 
 var (
-	profileTargets = []string{"tidb", "tikv", "pd", "tiflash"}
-	dataSizes      = []int{128 * 1024, 256 * 1024, 512 * 1024, 128 * 1024}
+	profileTargets = []string{"tidb", "tikv", "pd", "tiflash", "tidb2"}
+	dataSizes      = []int{120 * 1024, 256 * 1024, 512 * 1024, 128 * 1024, 50 * 1024}
 	datas          = [][]byte{}
 )
 
@@ -36,6 +37,14 @@ func StartLoadData(db *store.ProfileStorage, mockLoad bool) {
 	cfg.ContinueProfiling.DataRetentionSeconds = 60 * 1
 	config.StoreGlobalConfig(cfg)
 
+	badgerDB := document.GetBadger()
+	ListBadgerDB(badgerDB, false)
+	ListBadgerDB(badgerDB, true)
+	infos := strings.Split(badgerDB.LevelsToString(), "\n")
+	for _, info := range infos {
+		log.Info(info)
+	}
+
 	total := 0
 	for _, data := range datas {
 		total += len(data)
@@ -50,6 +59,11 @@ func StartLoadData(db *store.ProfileStorage, mockLoad bool) {
 			badgerDB := document.GetBadger()
 			ListBadgerDB(badgerDB, false)
 			ListBadgerDB(badgerDB, true)
+			infos := strings.Split(badgerDB.LevelsToString(), "\n")
+			for _, info := range infos {
+				log.Info(info)
+			}
+			//badgerDB.Close()
 		}
 	}()
 }

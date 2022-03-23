@@ -21,9 +21,8 @@ func Init(cfg *config.Config) {
 	dataPath := path.Join(cfg.Storage.Path, "docdb")
 	l, _ := initLogger(cfg)
 	opts := badger.DefaultOptions(dataPath).
-		WithNumVersionsToKeep(1).
-		WithNumLevelZeroTables(0).
-		WithNumLevelZeroTablesStall(1).
+		WithNumLevelZeroTables(2).
+		WithNumVersionsToKeep(0).
 		WithZSTDCompressionLevel(3).
 		WithBlockSize(8 * 1024).
 		WithValueThreshold(128 * 1024).

@@ -42,3 +42,5 @@ require (
 )
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.26.0
+
+replace github.com/dgraph-io/badger/v3 => /Users/cs/code/goread/src/github.com/dgraph-io/badger

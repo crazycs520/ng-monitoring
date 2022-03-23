@@ -3,6 +3,7 @@ package document
 import (
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -72,12 +73,23 @@ func tryFlattenIfNeeded(db *badger.DB) {
 	if !needFlatten(db) {
 		return
 	}
+
+	begoreInfos := strings.Split(badgerDB.LevelsToString(), "\n")
+
 	start := time.Now()
 	err := db.Flatten(runtime.NumCPU()/2 + 1)
 	if err != nil {
 		log.Error("badger flatten failed", zap.Error(err))
 		return
 	}
+	afterInfos := strings.Split(badgerDB.LevelsToString(), "\n")
+	for _, info := range begoreInfos {
+		log.Info("--before--" + info)
+	}
+	for _, info := range afterInfos {
+		log.Info("--after--" + info)
+	}
+
 	ts := time.Now().Unix()
 	err = storeLastFlattenTs(db, ts)
 	if err != nil {
