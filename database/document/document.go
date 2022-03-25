@@ -19,7 +19,7 @@ var closeCh chan struct{}
 
 func Init(cfg *config.Config) {
 	dataPath := path.Join(cfg.Storage.Path, "docdb")
-	l, _ := initLogger(cfg)
+	l, _ := InitLogger(cfg)
 	opts := badger.DefaultOptions(dataPath).
 		WithNumLevelZeroTables(2).
 		WithNumVersionsToKeep(0).

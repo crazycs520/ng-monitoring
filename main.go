@@ -10,12 +10,10 @@ import (
 	"github.com/pingcap/ng-monitoring/component/conprof"
 	"github.com/pingcap/ng-monitoring/component/domain"
 	"github.com/pingcap/ng-monitoring/component/topology"
-	"github.com/pingcap/ng-monitoring/component/topsql"
 	"github.com/pingcap/ng-monitoring/config"
 	"github.com/pingcap/ng-monitoring/config/pdvariable"
 	"github.com/pingcap/ng-monitoring/database"
 	"github.com/pingcap/ng-monitoring/database/document"
-	"github.com/pingcap/ng-monitoring/database/timeseries"
 	"github.com/pingcap/ng-monitoring/service"
 	"github.com/pingcap/ng-monitoring/utils/printer"
 
@@ -87,11 +85,11 @@ func main() {
 	pdvariable.Init(do)
 	defer pdvariable.Stop()
 
-	err = topsql.Init(cfg, config.Subscribe(), document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
-	if err != nil {
-		log.Fatal("Failed to initialize topsql", zap.Error(err))
-	}
-	defer topsql.Stop()
+	//err = topsql.Init(cfg, config.Subscribe(), document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
+	//if err != nil {
+	//	log.Fatal("Failed to initialize topsql", zap.Error(err))
+	//}
+	//defer topsql.Stop()
 
 	err = conprof.Init(document.Get(), topology.Subscribe())
 	if err != nil {

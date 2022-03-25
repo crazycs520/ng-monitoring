@@ -25,7 +25,7 @@ type logger struct {
 	level loggingLevel
 }
 
-func initLogger(cfg *config.Config) (*logger, error) {
+func InitLogger(cfg *config.Config) (*logger, error) {
 	var err error
 	var logDir string
 	if cfg.Log.Path != "" {
