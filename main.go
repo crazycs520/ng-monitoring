@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/pingcap/ng-monitoring/component/conprof/mockload"
-	stdlog "log"
 	"os"
+	stdlog "log"
 
 	"github.com/pingcap/ng-monitoring/component/conprof"
 	"github.com/pingcap/ng-monitoring/component/domain"
@@ -16,6 +15,9 @@ import (
 	"github.com/pingcap/ng-monitoring/database/document"
 	"github.com/pingcap/ng-monitoring/service"
 	"github.com/pingcap/ng-monitoring/utils/printer"
+	"github.com/pingcap/ng-monitoring/component/conprof/mockload"
+	"github.com/pingcap/ng-monitoring/component/topsql"
+	"github.com/pingcap/ng-monitoring/database/timeseries"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/procutil"
 	"github.com/pingcap/log"
@@ -85,11 +87,11 @@ func main() {
 	pdvariable.Init(do)
 	defer pdvariable.Stop()
 
-	//err = topsql.Init(cfg, config.Subscribe(), document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
-	//if err != nil {
-	//	log.Fatal("Failed to initialize topsql", zap.Error(err))
-	//}
-	//defer topsql.Stop()
+	err = topsql.Init(cfg, config.Subscribe(), document.Get(), timeseries.InsertHandler, timeseries.SelectHandler, topology.Subscribe(), pdvariable.Subscribe())
+	if err != nil {
+		log.Fatal("Failed to initialize topsql", zap.Error(err))
+	}
+	defer topsql.Stop()
 
 	err = conprof.Init(document.Get(), topology.Subscribe())
 	if err != nil {

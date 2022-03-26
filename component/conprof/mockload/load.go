@@ -63,7 +63,6 @@ func StartLoadData(db *store.ProfileStorage, mockLoad bool) {
 			for _, info := range infos {
 				log.Info(info)
 			}
-			//badgerDB.Close()
 		}
 	}()
 }
