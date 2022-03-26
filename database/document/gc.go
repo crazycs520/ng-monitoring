@@ -3,7 +3,6 @@ package document
 import (
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -74,7 +73,7 @@ func tryFlattenIfNeeded(db *badger.DB) {
 		return
 	}
 
-	begoreInfos := strings.Split(badgerDB.LevelsToString(), "\n")
+	//begoreInfos := strings.Split(badgerDB.LevelsToString(), "\n")
 
 	start := time.Now()
 	err := db.Flatten(runtime.NumCPU()/2 + 1)
@@ -82,13 +81,13 @@ func tryFlattenIfNeeded(db *badger.DB) {
 		log.Error("badger flatten failed", zap.Error(err))
 		return
 	}
-	afterInfos := strings.Split(badgerDB.LevelsToString(), "\n")
-	for _, info := range begoreInfos {
-		log.Info("--before--" + info)
-	}
-	for _, info := range afterInfos {
-		log.Info("--after--" + info)
-	}
+	//afterInfos := strings.Split(badgerDB.LevelsToString(), "\n")
+	//for _, info := range begoreInfos {
+	//	log.Info("--before--" + info)
+	//}
+	//for _, info := range afterInfos {
+	//	log.Info("--after--" + info)
+	//}
 
 	ts := time.Now().Unix()
 	err = storeLastFlattenTs(db, ts)
@@ -97,8 +96,8 @@ func tryFlattenIfNeeded(db *badger.DB) {
 		return
 	}
 	log.Info("badger flatten success", zap.Int64("ts", ts), zap.Duration("cost", time.Since(start)))
-	ListBadgerDB(badgerDB, false)
-	ListBadgerDB(badgerDB, true)
+	//ListBadgerDB(badgerDB, false)
+	//ListBadgerDB(badgerDB, true)
 }
 
 func needFlatten(db *badger.DB) bool {
