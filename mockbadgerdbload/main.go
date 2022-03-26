@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/procutil"
+	"github.com/genjidb/genji"
 	"github.com/pingcap/log"
 	"github.com/pingcap/ng-monitoring/config"
 	"github.com/pingcap/ng-monitoring/database/document"
@@ -33,9 +34,18 @@ func init() {
 	}
 }
 func main() {
-	db, err := NewBadgerDB("data")
+	//db, err := NewBadgerDB("data")
+	//mustBeNil(err)
+	//defer db.Close()
+	genjidb, db, err := NewGenjiDB("data")
 	mustBeNil(err)
-	defer db.Close()
+	defer genjidb.Close()
+
+	//genjiPrepare(genjidb)
+
+	//txn := db.NewTransaction(true)
+	//err = txn.Commit()
+	//mustBeNil(err)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -44,38 +54,8 @@ func main() {
 			if isCtxDone(ctx) {
 				return
 			}
-			deletedTsList := [][]byte{}
-			oldestTS := time.Now().Add(-time.Second * 10).UnixNano()
-			err := db.View(func(txn *badger.Txn) error {
-				opts := badger.DefaultIteratorOptions
-				it := txn.NewIterator(opts)
-				defer it.Close()
-				for it.Rewind(); it.Valid(); it.Next() {
-					item := it.Item()
-					k := item.Key()
-					ts, err := strconv.ParseInt(string(k), 10, 64)
-					if err != nil {
-						continue
-					}
-					if ts < oldestTS {
-						deletedTsList = append(deletedTsList, k)
-					} else {
-						break
-					}
-				}
-				return nil
-			})
-			mustBeNil(err)
-
-			err = db.Update(func(txn *badger.Txn) error {
-				for _, k := range deletedTsList {
-					err := txn.Delete(k)
-					mustBeNil(err)
-				}
-				return nil
-			})
-			mustBeNil(err)
-			fmt.Printf("delete %v items\n", len(deletedTsList))
+			badgerDelete(db)
+			//genjiDelete(genjidb)
 			time.Sleep(time.Second * 1)
 		}
 	}()
@@ -86,8 +66,11 @@ func main() {
 			if time.Since(lastF) > time.Second*30 {
 				lastF = time.Now()
 				db.Flatten(12)
+				fmt.Printf("flatten----------\n")
 			}
 			runValueLogGC(db)
+			fmt.Printf("max version: %v\n", db.MaxVersion())
+			//db.SetDiscardTs()
 			select {
 			case <-time.After(time.Second * 10):
 			case <-ctx.Done():
@@ -117,14 +100,8 @@ func main() {
 			if isCtxDone(ctx) {
 				return
 			}
-			db.Update(func(txn *badger.Txn) error {
-				ts := time.Now().UnixNano()
-				for i, data := range datas {
-					key := strconv.Itoa(int(ts) + i)
-					txn.Set([]byte(key), genData(data))
-				}
-				return nil
-			})
+			badgerWrite(db)
+			//genjiWrite(genjidb)
 			time.Sleep(time.Millisecond * 100)
 		}
 	}()
@@ -138,7 +115,7 @@ func main() {
 func runValueLogGC(db *badger.DB) {
 	// at most do 10 value log gc each time.
 	for i := 0; i < 10; i++ {
-		err := db.RunValueLogGC(0.001)
+		err := db.RunValueLogGC(0.1)
 		if err != nil {
 			if err == badger.ErrNoRewrite {
 				fmt.Println("badger has no value log need gc now")
@@ -151,6 +128,72 @@ func runValueLogGC(db *badger.DB) {
 	}
 }
 
+func badgerWrite(db *badger.DB) {
+	db.Update(func(txn *badger.Txn) error {
+		ts := time.Now().UnixNano()
+		for i, data := range datas {
+			key := strconv.Itoa(int(ts) + i)
+			txn.Set([]byte(key), genData(data))
+		}
+		return nil
+	})
+}
+
+func badgerDelete(db *badger.DB) {
+	deletedTsList := [][]byte{}
+	oldestTS := time.Now().Add(-time.Second * 10).UnixNano()
+	err := db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			ts, err := strconv.ParseInt(string(k), 10, 64)
+			if err != nil {
+				continue
+			}
+			if ts < oldestTS {
+				deletedTsList = append(deletedTsList, k)
+			} else {
+				break
+			}
+		}
+		return nil
+	})
+	mustBeNil(err)
+
+	err = db.Update(func(txn *badger.Txn) error {
+		for _, k := range deletedTsList {
+			err := txn.Delete(k)
+			mustBeNil(err)
+		}
+		return nil
+	})
+	mustBeNil(err)
+	fmt.Printf("delete %v items\n", len(deletedTsList))
+}
+
+func genjiWrite(db *genji.DB) {
+	ts := time.Now().UnixNano()
+	for i, data := range datas {
+		err := db.Exec("INSERT INTO t (ts,data) VALUES (?, ?)", int(ts)+i, data)
+		mustBeNil(err)
+	}
+}
+
+func genjiDelete(db *genji.DB) {
+	oldestTS := time.Now().Add(-time.Second * 10).UnixNano()
+	err := db.Exec("DELETE FROM t WHERE ts <= ?", oldestTS)
+	mustBeNil(err)
+}
+
+func genjiPrepare(db *genji.DB) {
+	sql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS t (ts INTEGER PRIMARY KEY, data BLOB)")
+	err := db.Exec(sql)
+	mustBeNil(err)
+}
+
 func NewBadgerDB(storagePath string) (*badger.DB, error) {
 	cfg := config.GetDefaultConfig()
 	cfg.Log.Path = "log"
@@ -159,12 +202,33 @@ func NewBadgerDB(storagePath string) (*badger.DB, error) {
 		WithNumLevelZeroTables(2).
 		WithNumVersionsToKeep(0).
 		WithZSTDCompressionLevel(3).
-		WithBlockSize(8 * 1024).
+		//WithBlockSize(8 * 1024).
 		WithValueThreshold(128 * 1024).
 		WithLogger(l)
 
 	engine, err := badgerengine.NewEngine(opts)
 	return engine.DB, err
+}
+
+func NewGenjiDB(storagePath string) (*genji.DB, *badger.DB, error) {
+	cfg := config.GetDefaultConfig()
+	cfg.Log.Path = "log"
+	l, _ := document.InitLogger(&cfg)
+	opts := badger.DefaultOptions(storagePath).
+		WithNumLevelZeroTables(2).
+		WithNumVersionsToKeep(0).
+		WithZSTDCompressionLevel(3).
+		//WithBlockSize(8 * 1024).
+		WithValueThreshold(128 * 1024).
+		WithLogger(l)
+
+	engine, err := badgerengine.NewEngine(opts)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	db, err := genji.New(context.Background(), engine)
+	return db, engine.DB, err
 }
 
 func mustBeNil(err error) {
