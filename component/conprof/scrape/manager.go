@@ -180,8 +180,8 @@ func (m *Manager) startScrape(ctx context.Context, component topology.Component,
 	if !continueProfilingCfg.Enable {
 		return nil
 	}
-	// TODO: remove this after TiFlash fix the profile bug.
-	if component.Name == topology.ComponentTiFlash {
+	// TODO: remove this after TiFlash/TiKV fix the profile bug.
+	if component.Name != topology.ComponentTiDB {
 		return nil
 	}
 	profilingConfig := m.getProfilingConfig(component)
